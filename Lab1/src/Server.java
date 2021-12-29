@@ -1,42 +1,38 @@
-
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 
 public class Server {
     public static void main(String[] args) throws IOException {
 
+        BufferedReader in;
+        BufferedWriter out;
         ServerSocket serverSocket = new ServerSocket(8080);
         System.out.println("Сервер ждет клиента...");
-        ReaderClass reader = new ReaderClass();
-        reader.writeInfoIntoMyFile();
-        List<String> response = reader.readMyFile();
-        int ind = 0;
         String name = "Ilya";
-
-        try (Socket clientSocket = serverSocket.accept();
-             InputStream inputStream = clientSocket.getInputStream();
-             OutputStream outputStream = clientSocket.getOutputStream()) {
+        Socket clientSocket = serverSocket.accept();
+        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        try{
 
             System.out.println("Новое соединение: " + clientSocket.getInetAddress().toString());
             int request = 0;
-            while ((inputStream.read()) != -1) {
-                if (inputStream.read() == ind) {
-                    request = -1;
-                    outputStream.write(request);
+            while (true) {
+                String clientMes = in.readLine();
+                if (clientMes.equals(name)) {
+                    out.write("OK");
+                    out.flush();
                     System.out.println("Отправлено: " + request);
-                    outputStream.flush();
                     break;
                 }
-                outputStream.write(0);
-                System.out.println("отправлено клиенту: " + 0);
-                outputStream.flush();
+                out.write(clientMes + "NO!\n");
+                out.flush();
+                System.out.println("отправлено клиенту: " + clientMes + "NO!");
+
             }
             System.out.println("клиент отключился");
+        }catch (IOException e){
+            e.printStackTrace();
         }
     }
 }
